@@ -28,6 +28,11 @@ class TicketIn(BaseModel):
     title: str
     priority: str = "medium"
 
+class TicketUpdate(BaseModel):
+    title: str | None = None
+    priority: str | None = None
+    status: str | None = None
+
 
 
 @app.post("/tickets", status_code=201)
@@ -83,6 +88,20 @@ def get_ticket(ticket_id: str):
         )
 
     
+    return item
+
+@app.put("/tickets/{ticket_id}")
+def update_ticket(ticket_id: str, data: TicketUpdate):
+    table = get_table()
+    item = table.get_item(Key={"id": ticket_id}).get("Item")
+    if item is None:
+        raise HTTPException(
+                    status_code=404,
+                    detail="Ticket not found"
+                )
+    changes = data.model_dump(exclude_unset=True)
+    item.update(changes)
+    table.put_item(Item=item)
     return item
 
 handler = Mangum(app)

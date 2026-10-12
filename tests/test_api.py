@@ -48,3 +48,15 @@ def test_list_tickets():
     response = client.get("/tickets")
     assert response.status_code == 200
     assert len(response.json()) == 2
+
+
+@mock_aws
+def test_update_ticket():
+    make_table()
+    created = client.post("/tickets", json={"title": "Fix printer", "priority": "low"})
+    ticket_id = created.json()["id"]
+
+    response = client.put(f"/tickets/{ticket_id}", json={"status": "closed"})
+    assert response.status_code == 200
+    assert response.json()["status"] == "closed"
+    assert response.json()["title"] == "Fix printer"
