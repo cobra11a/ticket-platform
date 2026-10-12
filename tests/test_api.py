@@ -32,3 +32,19 @@ def test_create_and_get_ticket():
     fetched = client.get(f"/tickets/{ticket_id}")
     assert fetched.status_code == 200
     assert fetched.json()["title"] == "Test"
+
+@mock_aws
+def test_get_missing_ticket_returns_404():
+    make_table()
+    response = client.get("/tickets/does-not-exist")
+    assert response.status_code == 404
+
+
+@mock_aws
+def test_list_tickets():
+    make_table()
+    client.post("/tickets", json={"title": "First", "priority": "low"})
+    client.post("/tickets", json={"title": "Second", "priority": "high"})
+    response = client.get("/tickets")
+    assert response.status_code == 200
+    assert len(response.json()) == 2
