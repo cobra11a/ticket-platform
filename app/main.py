@@ -1,35 +1,88 @@
-from fastapi import FastAPI , HTTPException
+
+
+import os
+import uuid
+import boto3
+
+from fastapi import FastAPI, HTTPException
+from mangum import Mangum
+from pydantic import BaseModel
+
+
+
 
 app = FastAPI()
 
-tickets = []
 
-@app.post("/tickets")
-def create_ticket(title: str, priority: str = "medium"):
+TABLE_NAME = os.getenv("TABLE_NAME", "tickets")
 
+def get_table():
+    dynamodb = boto3.resource("dynamodb")
+    table = dynamodb.Table(TABLE_NAME)
+
+    return table
+
+
+
+class TicketIn(BaseModel):
+    title: str
+    priority: str = "medium"
+
+
+
+@app.post("/tickets", status_code=201)
+def create_ticket(data: TicketIn):
+
+    
     ticket = {
-        "id": len(tickets) + 1,
-        "title": title,
-        "priority": priority,
+        "id": str(uuid.uuid4()),
+        "title": data.title,
+        "priority": data.priority,
         "status": "open"
-        }
-    tickets.append(ticket)
+    }
+
+    table = get_table()
+    table.put_item(Item=ticket)
+
     return ticket
 
+
+
+@app.get("/tickets")
+def list_tickets():
+
+    
+    table = get_table()
+
+   
+    response = table.scan()
+
+   
+    return response.get("Items", [])
+
+
 @app.get("/tickets/{ticket_id}")
-def get_ticket(ticket_id: int):
+def get_ticket(ticket_id: str):
 
-     for ticket in tickets:
-        if ticket["id"] == ticket_id:
-                return ticket
+    
+    table = get_table()
 
-     raise HTTPException(status_code=404,detail="Ticket not found")
+    
+    response = table.get_item(
+        Key={"id": ticket_id}
+    )
 
-@app.put("/tickets/{ticket_title}")
-def put_ticket(ticket_title,new_title):
+    
+    item = response.get("Item")
 
-     for ticket in tickets:
-          if ticket["title"] ==ticket_title:
-               ticket["title"] = new_title
-               return ticket
-     raise HTTPException(status_code=404,detail="Ticket not found")
+    
+    if item is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Ticket not found"
+        )
+
+    
+    return item
+
+handler = Mangum(app)
