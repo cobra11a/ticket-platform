@@ -104,4 +104,14 @@ def update_ticket(ticket_id: str, data: TicketUpdate):
     table.put_item(Item=item)
     return item
 
+@app.delete("/tickets/{ticket_id}")
+def delete_ticket(ticket_id:str):
+    table = get_table()
+
+    item = table.get_item(Key={"id":ticket_id}).get("Item")
+    if item is None:
+        raise HTTPException(status_code=404,detail="Ticket not found")
+    table.delete_item(Key={"id":ticket_id})
+    return{"message": "Ticket deleted"}
+
 handler = Mangum(app)

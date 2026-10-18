@@ -60,3 +60,16 @@ def test_update_ticket():
     assert response.status_code == 200
     assert response.json()["status"] == "closed"
     assert response.json()["title"] == "Fix printer"
+
+
+@mock_aws
+def test_delete_ticket():
+    make_table()
+    created = client.post("/tickets", json={"title": "Old ticket", "priority": "low"})
+    ticket_id = created.json()["id"]
+
+    deleted = client.delete(f"/tickets/{ticket_id}")
+    assert deleted.status_code == 200
+
+    fetched = client.get(f"/tickets/{ticket_id}")
+    assert fetched.status_code == 404
