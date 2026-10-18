@@ -59,3 +59,4 @@ requirements.txt     Python dependencies
 - Designing REST endpoints and handling errors such as a missing ticket
 - Why NoSQL needs generated ids, and how DynamoDB's response shape differs from SQL
 - Writing tests that catch real bugs, including one in my own update endpoint
+- Debugging real mistakes: DynamoDB's `Item` key is case-sensitive, and an endpoint that fetched the wrong value was caught only because a test failed
