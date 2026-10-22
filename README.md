@@ -109,8 +109,7 @@ requirements-lambda.txt      Runtime dependencies packaged into the Lambda zip
 - [x] Terraform: IAM role for Lambda
 - [x] Terraform: Lambda function and API Gateway
 - [x] Deployed to AWS (ap-south-1) and all endpoints verified with curl
-- [ ] Architecture diagram
-- [ ] Authentication on the API
+
 
 ## What I learned
 - Designing REST endpoints and handling errors such as a missing ticket
