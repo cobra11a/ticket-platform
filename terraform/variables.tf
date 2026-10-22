@@ -18,3 +18,8 @@ variable "lambda_zip_path" {
   type        = string
 
 }
+variable "labda_zip_path"{
+ description ="Path to the packaged Lambda zip"
+ type = string
+ default ="../build/lambda.zip"
+}
